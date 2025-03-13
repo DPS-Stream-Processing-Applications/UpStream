@@ -19,13 +19,6 @@
             ansible
             # glibcLocales
 
-            poetry
-            terraform
-            nodePackages.cdktf-cli
-            # INFO: The following are dependencies of `cdktf-cli`
-            nodejs_20 # 20 is the latest Node version `cdktf` has been tested with.
-            #
-
             kubectl
             kubernetes-helm
           ];
