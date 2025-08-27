@@ -9,6 +9,7 @@ packages = [{include = "scenario-builder", from = "src"}]
 [tool.poetry.dependencies]
 python = "^3.12"
 numpy = "^2.3.2"
+scipy = "^1.16.1"
 
 [tool.poetry.group.dev.dependencies]
 
