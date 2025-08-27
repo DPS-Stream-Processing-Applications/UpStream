@@ -4,12 +4,13 @@
 [![Nix](https://img.shields.io/badge/Nix_devShell-%235277C3?style=for-the-badge&logo=NixOS&logoColor=white)](https://nixos.wiki/wiki/Flakes)
 [![Helm](https://img.shields.io/badge/Helm-0F1689?style=for-the-badge&logo=Helm&logoColor=white)](https://helm.sh/)
 [![Apache Flink](https://img.shields.io/badge/Apache%20Flink%201.18.1-E6526F?style=for-the-badge&logo=Apache%20Flink&logoColor=white)](https://flink.apache.org/)
+[![Chameleon Cloud](https://img.shields.io/badge/Chameleon%20Cloud-E6526F?style=for-the-badge&logoColor=white)](https://www.chameleoncloud.org/)
+
 </div>
 
 # Description
-This project is a collection of applications written with `Apache Beam`.
-The applications are targeted to be run with `Apache Flink` but should be reusable for any of the other supported runners.
-
+This Projects contains all parts of the UpStream scaling framework. It makes use of domain specific metrics from the Flink application cluster to make a scaling decision using
+[MPC](https://en.wikipedia.org/wiki/Model_predictive_control).
 # Setup
 
 > [!TIP]
