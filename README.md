@@ -9,7 +9,7 @@
 
 [![Nix](https://img.shields.io/badge/Nix_devShell-%235277C3?style=for-the-badge&logo=NixOS&logoColor=white)](https://nixos.wiki/wiki/Flakes)
 [![Apache Flink](https://img.shields.io/badge/Apache%20Flink%201.18.1-E6526F?style=for-the-badge&logo=Apache%20Flink&logoColor=white)](https://flink.apache.org/)
-[![Nix](https://img.shields.io/badge/Helm-%235277C3?style=for-the-badge&logo=Helm&logoColor=white)](https://helm.sh/)
+[![Helm](https://img.shields.io/badge/Helm-0F1689?style=for-the-badge&logo=Helm&logoColor=white)](https://helm.sh/)
 </div>
 
 # Description
