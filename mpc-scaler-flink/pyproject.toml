@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "mpc-scaler-flink"
+version = "0.1.0"
+description = ""
+authors = ["eprader <56026248+eprader@users.noreply.github.com>"]
+readme = "README.md"
+packages = [{include = "mpc_scaler_flink", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+filterpy = "^1.4.5"
+casadi = "^3.6.7"
+do-mpc = "^4.6.5"
+numpy = "^1.26.4"
+kubernetes = "^31.0.0"
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.3"
+
+matplotlib = "^3.9.2"
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.poetry.scripts]
+main = "mpc_scaler_flink:main"
+generate_time_series_test_data = "tests.generate_time_series_test_data:main"

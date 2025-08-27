@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "mpc-scaler-flink.fullname" . }}-test-connection"
+  labels:
+    {{- include "mpc-scaler-flink.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ include "mpc-scaler-flink.fullname" . }}:{{ .Values.service.port }}']
+  restartPolicy: Never
