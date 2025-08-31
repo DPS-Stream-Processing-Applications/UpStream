@@ -2,3 +2,6 @@
 	path = beam-applications-java
 	url = https://github.com/DPS-Stream-Processing-Applications/beam-applications-java
 	branch = riotbenchsinglejob
+[submodule "ansible/k3s-ansible"]
+	path = ansible/k3s-ansible
+	url = https://github.com/k3s-io/k3s-ansible.git
