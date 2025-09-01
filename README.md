@@ -55,21 +55,43 @@ Use the `k3d-cluster-config.yaml` file of this project to set up a preconfigured
 See the following [guide on how to use a config file](https://k3d.io/v5.0.0/usage/configfile/#usage).
 Follow the [quick start guide](https://k3d.io/v5.6.3/#quick-start) to set up an empty cluster.
 
+### Remote Cluster with Chameleon Cloud
+This project uses the Chameleon test bed more specificaly `CHI@TACC` to test and evaluate the application.
+The experimental setup requires 1 Jump Host as well as 3 cluster nodes.
+Required resources: 1 floating IP, One instance of type skylake, as well as three instances of a cascadelake node.
+To provision instances on Chameleon Cloud you first have to [create a lease](https://chameleoncloud.readthedocs.io/en/latest/technical/reservations/gui_reservations.html).
+After that you can [launch the instances](https://chameleoncloud.readthedocs.io/en/latest/technical/baremetal/launching_gui.html#launch-an-instance).
+Make sure you use the official Chameleon Cloud version of the `Ubuntu 22.04` image for consistency.
+
+> [!TIP]
+> regarding `ssh` access to the host, it might be easiest to upload your existing global ssh key,
+> such that all following `ssh` commands work without modification.
+
+#### SSH
+To make connecting to the test bed easier, this project provides an ssh config located at`.ssh/config`.
+Make sure you edit the IP addresses of the nodes once they are running in Chameleon.
+
+#### Ansible
+This project uses `Ansible` to set up the Kubernetes cluster on the remote nodes.
+Follow the setup instructions in the [ansible directory](ansible/README.md).
+
 ### Connecting To a Remote Cluster
 To make it as easy as possible to deploy the applications on a remote cluster follow the following steps:
 
-### Kube Config of Remote Host
-Kubectl needs a config file to know where the cluster is located an which credentials to use to connect to it. It's easiest to just copy the existing `config` file from the remote server node.
-Using a Jump Host the following scp command will work:
+#### Forwarding kubectl
+`kubectl` uses port 6443 to communicate with a cluster. This project provides the `forward_kubectl` utility to achieve this.
+
 ```bash
-scp -o "ProxyJump <proxy_user>@<proxy_ip>" <host_user>@<host_ip>:~/.kube/config ./.kube/config
+forward_kubectl
 ```
+> [!WARNING]
+> This command will only work once the [Ansible setup](#ansible) has been completed.
 
-#### SSH Tunnel
-`kubectl` uses port 6443 to communicate with a cluster. You can forward this port on the remote host through the Jump Host.
+You can verify connectivity to the Kubernetes cluster by running 
 
 ```bash
-ssh -J <proxy_user>@<proxy_ip> -L 6443:<host_ip>:6443 <host_user>@<host_ip> -N &
+kubectl get nodes
+
 ```
 
 ### Helm Deployment
