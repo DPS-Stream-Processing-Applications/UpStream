@@ -75,11 +75,9 @@ Make sure you edit the IP addresses of the nodes once they are running in Chamel
 This project uses `Ansible` to set up the Kubernetes cluster on the remote nodes.
 Follow the setup instructions in the [ansible directory](ansible/README.md).
 
-### Connecting To a Remote Cluster
-To make it as easy as possible to deploy the applications on a remote cluster follow the following steps:
-
 #### Forwarding kubectl
-`kubectl` uses port 6443 to communicate with a cluster. This project provides the `forward_kubectl` utility to achieve this.
+`kubectl` uses port 6443 to communicate with a cluster.
+This project provides the `forward_kubectl` utility to achieve port forwarding to the `k3s-server` node.
 
 ```bash
 forward_kubectl
