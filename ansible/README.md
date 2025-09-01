@@ -4,10 +4,10 @@ The `k3s-ansible` project is used to set up a k3s cluster using Ansible.
 # Prerequisites
 > [!WARNING]
 > Luckily Ansible makes use of `ssh` under the hood. This means we can reuse this
-> projects [ssh config](.ssh/config). Make sure it is set up properly before you proceed.
+> projects [ssh config](../.ssh/config). Make sure it is set up properly before you proceed.
 
 The agent nodes of the cluster need to know how to reach their server node.
-This is achieved through the `api_endpoint` field in [inventory.yml](ansible/inventory.yml)
+This is achieved through the `api_endpoint` field in [inventory.yml](inventory.yml)
 Make sure it matches the IP of `k3s-server` before you try to execute this playbook.
 
 # Setup
@@ -18,4 +18,7 @@ ansible-playbook k3s-ansible/playbooks/site.yml \
 
 ansible-playbook k3s-ansible/playbooks/reset.yml
 ```
+# Aftermath
+The playbook will copy the kubectl config of the cluster to `.kube/config`.
+This allows you to [connect to the remote cluster locally](../README.md#forwarding-kubectl).
 
