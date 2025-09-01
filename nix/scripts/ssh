@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Function that runs the real ssh (skipping our own wrapper in PATH)
+real_ssh() {
+  # Remove the first path entry (our wrapper dir) and run ssh from the rest
+  env PATH="${PATH#*:}" ssh "$@"
+}
+
+if [ -z "$PROJECT_ROOT" ]; then
+  echo "Warning: PROJECT_ROOT is not set. Falling back to system ssh." >&2
+  real_ssh "$@"
+fi
+
+PROJECT_SSH_CONFIG="$PROJECT_ROOT/.ssh/config"
+
+if [ -f "$PROJECT_SSH_CONFIG" ]; then
+  real_ssh -F "$PROJECT_SSH_CONFIG" "$@"
+else
+  echo "Info: Project SSH config not found at $PROJECT_SSH_CONFIG, using system ssh." >&2
+  real_ssh "$@"
+fi

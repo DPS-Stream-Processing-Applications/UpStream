@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+if [ -f "$PROJECT_ROOT/.kube/config" ]; then
+    echo "Forwarding  localhost:6443 to \`k3s-server\`"
+    ssh -L 6443:localhost:6443 k3s-server -N &
+else
+  echo "Info: \`.kube/config\` does not exist yet. Make sure you set up the remote cluster before running this command."
+fi
