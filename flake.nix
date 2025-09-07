@@ -16,6 +16,7 @@
         default = pkgs.mkShell {
           buildInputs = with pkgs; [
             openssh
+            gnused # INFO: Used in `fix_kubeconfig` utility.
             ansible
             # glibcLocales
 
