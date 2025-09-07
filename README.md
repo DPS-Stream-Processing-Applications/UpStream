@@ -77,10 +77,12 @@ Follow the setup instructions in the [ansible directory](ansible/README.md).
 
 #### Forwarding kubectl
 `kubectl` uses port 6443 to communicate with a cluster.
-This project provides the `forward_kubectl` utility to achieve port forwarding to the `k3s-server` node.
+The `k3s-server` node is only accessible via the jump host. This means if we want to use `kubectl` locally we need to modify the `.kube/config`.
+The `fix_kubeconfig` utility does this for you. The next step is to forward traffic from `localhost` to `k3s-server`.
+This project provides the `forward_kubectl` utility to achieve port forwarding from localhost:6443 to the `k3s-server` node.
 
 ```bash
-forward_kubectl
+fix_kubeconfig && forward_kubectl
 ```
 > [!WARNING]
 > This command will only work once the [Ansible setup](#ansible) has been completed.
