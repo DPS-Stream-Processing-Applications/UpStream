@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 if [ -f "$PROJECT_ROOT/.kube/config" ]; then
     echo "Forwarding  localhost:6443 to \`k3s-server\`"

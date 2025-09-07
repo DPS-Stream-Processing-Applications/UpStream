@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+set -euo pipefail
+
 # Function that runs the real ssh (skipping our own wrapper in PATH)
 real_ssh() {
   # Remove the first path entry (our wrapper dir) and run ssh from the rest
