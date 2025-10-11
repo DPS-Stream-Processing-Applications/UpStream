@@ -108,7 +108,7 @@ def sample_timestamps_gaussian(
 
 def sample_timestamps_exponential(row_count, scenario_duration_ms, scenario_target_file) -> NDArray:
     t0 = 0
-    t1 = scenario_duration_ms / 3       # 2.5 min
+    t1 = scenario_duration_ms / 5       # 2.5 min
     t2 = scenario_duration_ms - t1   # 12.5 min
     t3 = scenario_duration_ms           # 15 min
 
@@ -214,21 +214,23 @@ def main():
     print(f"writing scenario to {output_file}")
 
     with (
-        open(args.target_file, "r", encoding="utf-8") as infile,
-        open(output_file, "w", newline="", encoding="utf-8") as outfile,
-    ):
+    open(args.target_file, "r", encoding="utf-8") as infile,
+    open(output_file, "w", newline="", encoding="utf-8") as outfile,
+):
+    # Read header and write it directly
+        header = infile.readline()
+        outfile.write(header)
 
-        reader = csv.reader(infile, delimiter="|")
-        writer = csv.writer(outfile, delimiter="|")
-
-        header = next(reader)
-        writer.writerow(header)
-
-        for i, row in enumerate(reader):
+        for i, line in enumerate(infile):
             print(f"rows processed: {i}", end="\r", flush=True)
             if i >= len(timestamps):
                 break
-            row[0] = str(int(timestamps[i]))  # overwrite only first column
-            writer.writerow(row)
 
-        print()
+            parts = line.rstrip("\n").split("|", 1)
+            if len(parts) != 2:
+                continue  # skip malformed lines
+
+            new_line = f"{int(timestamps[i])}|{parts[1]}\n"
+            outfile.write(new_line)
+
+    print()
