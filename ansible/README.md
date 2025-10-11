@@ -12,6 +12,14 @@ Make sure it matches the IP of `k3s-server` before you try to execute this playb
 
 # Setup
 The following two commands allow for the creation and destruction of the k3s cluster.
+
+Before running make sure you connect to every node once to store the fingerprint.
+```bash
+ssh jump
+ssh k3s-server
+ssh k3s-agent-1
+ssh k3s-agent-2
+```
 ```bash
 ansible-playbook k3s-ansible/playbooks/site.yml \
     --extra-vars kubeconfig="$PROJECT_ROOT/.kube/config"
@@ -21,4 +29,3 @@ ansible-playbook k3s-ansible/playbooks/reset.yml
 # Aftermath
 The playbook will copy the kubectl config of the cluster to `.kube/config`.
 This allows you to [connect to the remote cluster locally](../README.md#forwarding-kubectl).
-
