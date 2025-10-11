@@ -45,8 +45,9 @@ def main():
     print(pods)
 
     i = 0
-    while i < 6:
-        print("infinite")
+    sync_period_sec: int = 15
+    while True:
+
         # TODO: read metrics from Prometheus
         scaling_factor = controller.measurement_step(np.array([0, 0, 0]))
 
