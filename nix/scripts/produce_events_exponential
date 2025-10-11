@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+java -jar $PROJECT_ROOT/KafkaProducer.jar $PROJECT_ROOT/data/riot_events_TAXI_exponential_scenario.csv $(nproc) "senml-source"
+

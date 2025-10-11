@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <local_file>"
+    exit 1
+fi
+
+LOCAL_FILE="$1"
+
+EXPECTED_NAME="FlinkJob.jar"
+if [ "$(basename "$LOCAL_FILE")" != "$EXPECTED_NAME" ]; then
+    echo "Error: Local file must be named '$EXPECTED_NAME'."
+    exit 1
+fi
+
+if [ ! -f "$LOCAL_FILE" ]; then
+    echo "Error: Local file '$LOCAL_FILE' does not exist."
+    exit 1
+fi
+
+NODES=("k3s-server" "k3s-agent-1" "k3s-agent-2")
+REMOTE_PATH="/tmp/flink/jobs/FlinkJob.jar"
+
+for host in "${NODES[@]}"; do
+    echo "Copying $LOCAL_FILE to $host:$REMOTE_PATH..."
+    ssh $host "mkdir -p /tmp/flink/jobs"
+    rsync -avz --checksum --progress "$LOCAL_FILE" "$host:$REMOTE_PATH"
+done
+
+# Wait for all background jobs to finish
+wait
+echo "The $EXPECTED_NAME was successfully uploaded to all nodes."
+

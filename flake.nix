@@ -19,6 +19,8 @@
             gnused # INFO: Used in `fix_kubeconfig` utility.
             ansible
             # glibcLocales
+            jdk11
+            kcat
 
             kubectl
             kubernetes-helm

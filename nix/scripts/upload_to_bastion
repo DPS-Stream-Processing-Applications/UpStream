@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+HOST="jump"
+
+ssh "$HOST" "mkdir -p ~/event_generator/"
+
+PRODUCER_JAR="$PROJECT_ROOT/beam-applications-java/kafkaProducer/build/KafkaProducer.jar"
+REMOTE_PATH="~/event_generator"
+DATA_PATH="$PROJECT_ROOT/beam-applications-java/data/riot_events_TAXI_exponential_scenario.csv"
+
+echo "Copying $PRODUCER_JAR to $HOST:$REMOTE_PATH..."
+rsync -avz --checksum --progress "$PRODUCER_JAR" "$HOST:$REMOTE_PATH"
+
+echo "Copying data to $HOST:~/data/..."
+ssh "$HOST" "mkdir -p $REMOTE_PATH/data/"
+rsync -avz --checksum --progress "$DATA_PATH" "$HOST:$REMOTE_PATH/data/"
+
+echo "Copying flake.nix to $HOST:$REMOTE_PATH"
+rsync -avz --checksum --progress "$PROJECT_ROOT/flake.nix" "$HOST:$REMOTE_PATH"
+
+echo "Copying flake.lock to $HOST:$REMOTE_PATH"
+rsync -avz --checksum --progress "$PROJECT_ROOT/flake.lock" "$HOST:$REMOTE_PATH"
+
+echo "Copying .kube/ to $HOST:$REMOTE_PATH ..."
+ssh "$HOST" "mkdir -p $REMOTE_PATH/.kube/"
+rsync -avz --checksum --progress "$PROJECT_ROOT/.kube/" "$HOST:$REMOTE_PATH/.kube/"
+
+# echo "Fixing .kube/config"
+# ssh $HOST -t "mv $REMOTE_PATH/.kube/config.bak $REMOTE_PATH/.kube/config"
+
+echo "Copying nix/ to $HOST:$REMOTE_PATH ..."
+ssh "$HOST" "mkdir -p $REMOTE_PATH/nix/"
+rsync -avz --checksum --progress "$PROJECT_ROOT/nix/" "$HOST:$REMOTE_PATH/nix/"
+
+echo "Copying ssh key to .ssh/ ..."
+rsync -avz --checksum --progress ~/.ssh/id_ed25519 "$HOST:~/.ssh/"
+
+echo "Copying config to .ssh/ ..."
+rsync -avz --checksum --progress $PROJECT_ROOT/.ssh/ "$HOST:$REMOTE_PATH/.ssh/"
+
+echo "remove proxy jump on remote ssh config ..."
+ssh $HOST -t "sed -i '/ProxyJump/d' $REMOTE_PATH/.ssh/config"
+

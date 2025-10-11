@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Function that runs the real ssh (skipping our own wrapper in PATH)
+real_rsync() {
+  # Remove the first path entry (our wrapper dir) and run ssh from the rest
+  env PATH="${PATH#*:}" rsync "$@"
+}
+
+if [ -z "$PROJECT_ROOT" ]; then
+  echo "Warning: PROJECT_ROOT is not set. Falling back to system rsync." >&2
+  real_rsync "$@"
+fi
+
+PROJECT_SSH_CONFIG="$PROJECT_ROOT/.ssh/config"
+
+if [ -f "$PROJECT_SSH_CONFIG" ]; then
+  real_rsync -e "$PROJECT_ROOT/nix/scripts/ssh" "$@"
+else
+  echo "Info: Project SSH config not found at $PROJECT_SSH_CONFIG, using system rsync." >&2
+  real_rsync "$@"
+fi
