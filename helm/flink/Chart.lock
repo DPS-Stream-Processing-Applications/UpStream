@@ -1,0 +1,9 @@
+dependencies:
+- name: cert-manager
+  repository: https://charts.jetstack.io
+  version: v1.15.0
+- name: flink-kubernetes-operator
+  repository: https://downloads.apache.org/flink/flink-kubernetes-operator-1.10.0/
+  version: 1.10.0
+digest: sha256:9ccd0579fa325ca90dc02bdd591afdeee65ab87ddf41cc9f59a4c08fccd9f556
+generated: "2025-09-07T22:34:43.358965405+02:00"

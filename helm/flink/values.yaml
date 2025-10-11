@@ -1,0 +1,14 @@
+# Default values for flink.
+additionalTaskManagers:
+  medium:
+    enabled: false
+  large:
+    enabled: false
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10 
+  targetCPUUtilizationPercentage: 90
+  targetMemoryUtilizationPercentage: 90
+

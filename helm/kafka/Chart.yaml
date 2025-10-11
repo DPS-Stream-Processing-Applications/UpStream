@@ -1,0 +1,12 @@
+apiVersion: v2
+name: kafka
+description: Kafka deployment for the RIOT test application
+version: "0.41.0"
+
+type: application
+
+dependencies:
+  - name: strimzi-kafka-operator
+    version: "0.41.0"
+    repository: "oci://quay.io/strimzi-helm"
+
