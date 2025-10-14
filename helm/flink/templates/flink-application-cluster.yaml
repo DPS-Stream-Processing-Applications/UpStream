@@ -2,7 +2,7 @@ apiVersion: flink.apache.org/v1beta1
 kind: FlinkDeployment
 metadata:
   namespace: default
-  name: flink-session-cluster
+  name: flink-application-cluster
 spec:
   mode: standalone
   image: flink:1.18
@@ -19,7 +19,8 @@ spec:
   podTemplate:
     metadata:
       labels:
-        release: prometheus
+        # NOTE: Prometheos looks for this `monitoring` label.
+        release: monitoring
     spec:
       serviceAccount: flink
       containers:

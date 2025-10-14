@@ -2,7 +2,7 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: "flink-application-cluster-task-manager"
+  name: "flink-application-cluster-task-manager-hpa"
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "flink.labels" . | nindent 4 }}
@@ -10,7 +10,7 @@ spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: "flink-application-cluster-task-manager"
+    name: "flink-application-cluster-taskmanager"
   minReplicas: {{ .Values.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas }}
   metrics:
@@ -29,5 +29,18 @@ spec:
         target:
           type: Utilization
           averageUtilization: {{ .Values.autoscaling.targetMemoryUtilizationPercentage }}
-    {{- end }}
+  {{- end }}
+  behavior:
+      scaleUp:
+        stabilizationWindowSeconds: 15   # react faster to load spikes
+        policies:
+          - type: Percent
+            value: 100
+            periodSeconds: 15
+      scaleDown:
+        stabilizationWindowSeconds: 15   # reduce pods faster than default 5min
+        policies:
+          - type: Percent
+            value: 100
+            periodSeconds: 15
 {{- end }}
