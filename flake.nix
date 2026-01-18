@@ -1,5 +1,5 @@
 {
-  description = "Environment for the BSc of Emanuel Prader";
+  description = "Environment for the BSc of Emanuel Prader, UpStream";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs";
@@ -16,25 +16,24 @@
         default = pkgs.mkShell {
           buildInputs = with pkgs; [
             openssh
-            gnused # INFO: Used in `fix_kubeconfig` utility.
             ansible
-            # glibcLocales
-            jdk11
-            kcat
 
+            k3d
             kubectl
             kubernetes-helm
+            gnused # INFO: Used in `fix_kubeconfig` utility.
           ];
 
           shellHook = ''
             export PROJECT_ROOT=$PWD
+            export PS1="(nix-shell) $PS1" # NOTE: To communicate that a nix shell is active
             # NOTE:
             # To make the use of `ssh` with this projects custom config easier,
             # a small ssh wrapper script in `nix/scripts` is prepended to the $PATH
             # to prioritise it over the regular `ssh` command.
             export PATH=$PROJECT_ROOT/nix/scripts:$PATH
-            export PS1="(nix-shell) $PS1" # NOTE: To communicate that a nix shell is active
             export KUBECONFIG=$PROJECT_ROOT/.kube/config
+            export PATH=$PATH:${pkgs.flink}/opt/flink/bin
           '';
         };
       };
