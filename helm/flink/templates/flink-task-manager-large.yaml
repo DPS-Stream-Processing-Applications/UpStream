@@ -13,9 +13,7 @@ data:
     execution.target: remote
     kubernetes.cluster-id: flink-session-cluster
     kubernetes.namespace: default
-    scheduler-mode: reactive
     execution.checkpointing.interval: 10s
-    job.autoscaler.enabled: "false"
     metrics.reporter.prom.factory.class: org.apache.flink.metrics.prometheus.PrometheusReporterFactory
     metrics.reporter.prom.port: 9249
   log4j-console.properties: |
