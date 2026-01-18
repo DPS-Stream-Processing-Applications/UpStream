@@ -10,6 +10,20 @@ cert-manager oci://quay.io/jetstack/charts/cert-manager \
 --set crds.enabled=true
 ```
 
-A part of the `riotbenchsinglejob` aplication requires the -
+```bash
+helm install mongodb ./mongodb
+helm install kafka ./kafka
+helm install monitoring ./monitoring
+```
+These three charts contain the required infrastructure for the RIoT applications and monitoring.
+Before you are able to run the Flink application cluster you need to upload the Job jar you are planning to deploy.
 
-
+```bash
+helm install flink ./flink
+```
+> [!WARNING]
+> Check `kubectl get pods` after installing the Flink chart.
+> It might not have launched the Jobmanager and Taskmanager
+> pods (starting with ´flink-application-cluster...`).
+> Uninstall the chart and reinstall it.
+> fter a second install the pods should be there.
