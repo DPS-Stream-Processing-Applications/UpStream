@@ -182,8 +182,8 @@ def main():
         row_count = sum(1 for _ in f) - 1
 
     print(f"Number of rows: {row_count}")
-    if row_count > 1 * 1000 * 1000:
-        row_count = 1 * 1000 * 1000
+    if row_count > 100 * 1000 * 1000:
+        row_count = 100 * 1000 * 1000
         print(
             """The number of rows exceeds the required maximum.
             New row count: 1 000 000"""
