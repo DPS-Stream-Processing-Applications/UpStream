@@ -3,6 +3,8 @@ apiVersion: kafka.strimzi.io/v1beta2
 kind: Kafka
 metadata:
   name: kafka-cluster
+  labels:
+    release: monitoring
 spec:
   kafka:
     version: 3.7.0
@@ -28,19 +30,35 @@ spec:
       default.replication.factor: 3
       min.insync.replicas: 2
       inter.broker.protocol.version: "3.7"
+    metricsConfig:
+      type: jmxPrometheusExporter
+      valueFrom:
+        configMapKeyRef:
+          name: kafka-metrics-config
+          key: kafka-metrics.yaml
+    template:
+      pod:
+        metadata:
+          labels:
+            kafka-metrics: "true"
     storage:
       type: ephemeral
-      # volumes:
-      # - id: 0
-      #   type: persistent-claim
-      #   size: 10Gi
-      #   deleteClaim: true
+
   zookeeper:
     replicas: 3
+    metricsConfig:
+      type: jmxPrometheusExporter
+      valueFrom:
+        configMapKeyRef:
+          name: zookeeper-metrics-config
+          key: zookeeper-metrics.yaml
+    template:
+      pod:
+        metadata:
+          labels:
+            kafka-metrics: "true"
     storage:
       type: ephemeral
-      # size: 10Gi
-      # deleteClaim: true
   entityOperator:
     topicOperator: {}
     userOperator: {}
