@@ -14,7 +14,7 @@ spec:
     metrics.reporter.prom.port: "9249"
 
     scheduler-mode: reactive
-    # BUG: 
+    # BUG:
     # Enabling checkpointing will lead to source tasks entering `FINISHED` state on rescale events.
     # Therefore we do not specify checkpointing since it is disabled by default.
     # execution.checkpointing.interval: "10s"
@@ -31,7 +31,7 @@ spec:
     # job.autoscaler.target.utilization.boundary: "0.2"
     # job.autoscaler.restart.time: 2m
     # job.autoscaler.catch-up.duration: 5m
-    # job.autoscaler.catch-up.duration: "0" 
+    # job.autoscaler.catch-up.duration: "0"
     # job.autoscaler.stabilization.interval: "30s"
 
   serviceAccount: flink
@@ -62,16 +62,14 @@ spec:
       cpu: 2
   taskManager:
     resource:
-      memory: "2048m" 
+      memory: "2048m"
       cpu: 1
   job:
     jarURI: local:///flink-jobs/FlinkJob.jar
     parallelism: 6
     state: running
     args:
-    # WARN:
-    # Edit this to match the URL of the MongoDB Service .
+      # WARN:
+      # Edit this to match the URL of the MongoDB Service .
       # - "--databaseUrl=mongodb://adminuser:password123@10.52.3.210:32000/"
       - "--experiRunId=TAXI"
-
-  mode: standalone
