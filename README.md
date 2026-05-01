@@ -81,17 +81,17 @@ The `k3s-server` node is only accessible via the jump host. This means if we wan
 The `fix_kubeconfig` utility does this for you. The next step is to forward traffic from `localhost` to `k3s-server`.
 This project provides the `forward_kubectl` utility to achieve port forwarding from localhost:6443 to the `k3s-server` node.
 
+> [!WARNING]
+> This command will only work once the [Ansible setup](#ansible) has been completed.
+
 ```bash
 fix_kubeconfig && forward_kubectl
 ```
-> [!WARNING]
-> This command will only work once the [Ansible setup](#ansible) has been completed.
 
 You can verify connectivity to the Kubernetes cluster by running 
 
 ```bash
 kubectl get nodes
-
 ```
 
 ### Helm Deployment
