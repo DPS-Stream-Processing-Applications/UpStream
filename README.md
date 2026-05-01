@@ -98,3 +98,18 @@ kubectl get nodes
 All the applications of this repository depend on external resources like an Apache `Kafka` cluster as well as a `mongoDB` database.
 All dependencies for the applications are managed and deployed via a custom `helm chart` in the `helm-charts` directory.
 Refer to the [README](./helm-charts/riot-applications/README.md) for an installation walkthrough.
+
+## Monitoring
+The project is using Prometheus and Grafana to track the metrics of the evaluation runs
+To forward the Monitoring UI's as well as the Flink UI run 
+```bash
+forward_monitoring
+```
+
+### Grafana Credentials
+You will need to query the login credentials for Grafana using the following commands:
+
+```bash
+kubectl get secret monitoring-grafana -o jsonpath="{.data.admin-password}" | base64 --decode && echo
+kubectl get secret monitoring-grafana -o jsonpath="{.data.admin-user}" | base64 --decode && echo
+```
