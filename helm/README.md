@@ -16,7 +16,14 @@ helm install kafka ./kafka
 helm install monitoring ./monitoring
 ```
 These three charts contain the required infrastructure for the RIoT applications and monitoring.
+
 Before you are able to run the Flink application cluster you need to upload the Job jar you are planning to deploy.
+The current implementation expects the job to be available on local disk.
+To upload the `.jar` build artifact to the cluster you can use the `upload_job_jar` utility.
+
+```bash
+upload_job_jar ../beam-applications-java/etl/build/FlinkJob.jar
+```
 
 ```bash
 helm install flink ./flink
@@ -26,4 +33,4 @@ helm install flink ./flink
 > It might not have launched the Jobmanager and Taskmanager
 > pods (starting with ´flink-application-cluster...`).
 > Uninstall the chart and reinstall it.
-> fter a second install the pods should be there.
+> After a second install the pods should be there.
