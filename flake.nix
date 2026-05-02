@@ -22,6 +22,8 @@
             kubectl
             kubernetes-helm
             gnused # INFO: Used in `fix_kubeconfig` utility.
+
+            jdk11
           ];
 
           shellHook = ''
