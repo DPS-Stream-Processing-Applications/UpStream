@@ -34,3 +34,18 @@ helm install flink ./flink
 > pods (starting with ´flink-application-cluster...`).
 > Uninstall the chart and reinstall it.
 > After a second install the pods should be there.
+
+Sometimes reinstalling flink will fail because some artifacts of the previous install are not removed via `helm uninstall`
+The following commands came up during implementation and testing to remove left behind artifacts.
+
+```bash
+kubectl delete flinkdeployments --all
+
+kubectl patch flinkdeployment flink-application-cluster -n default --type=json -p '[{"op": "remove", "path": "/metadata/finalizers"}]'
+
+kubectl delete serviceaccount flink -n default
+
+kubectl delete role flink -n default
+
+kubectl delete rolebinding flink-role-binding
+```
