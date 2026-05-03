@@ -70,10 +70,6 @@
               {
                 "color": "green",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           }
@@ -81,8 +77,8 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 9,
-        "w": 12,
+        "h": 18,
+        "w": 23,
         "x": 0,
         "y": 0
       },
@@ -107,13 +103,30 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum(kafka_server_BrokerTopicMetrics_OneMinuteRate{name=\"MessagesInPerSec\"})",
+          "expr": "sum(kafka_server_BrokerTopicMetrics_OneMinuteRate{name=\"MessagesInPerSec\", topic=\"senml-source\"})",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
-          "refId": "A",
+          "refId": "senml-source",
+          "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "sum(kafka_server_BrokerTopicMetrics_OneMinuteRate{name=\"MessagesInPerSec\", topic=\"senml-cleaned\"})",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "senml-cleaned",
           "useBackend": false
         }
       ],
@@ -127,7 +140,7 @@
     "list": []
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-30m",
     "to": "now"
   },
   "timepicker": {},
