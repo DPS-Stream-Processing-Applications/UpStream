@@ -113,3 +113,5 @@ You will need to query the login credentials for Grafana using the following com
 kubectl get secret monitoring-grafana -o jsonpath="{.data.admin-password}" | base64 --decode && echo
 kubectl get secret monitoring-grafana -o jsonpath="{.data.admin-user}" | base64 --decode && echo
 ```
+
+There are 2 dashboards as `.json` files stored in the [helm folder](./helm)
