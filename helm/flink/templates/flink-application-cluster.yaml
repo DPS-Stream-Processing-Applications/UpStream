@@ -66,10 +66,10 @@ spec:
       cpu: 1
   job:
     jarURI: local:///flink-jobs/FlinkJob.jar
-    parallelism: 6
+    parallelism: 128
     state: running
     args:
       # WARN:
-      # Edit this to match the URL of the MongoDB Service .
-      # - "--databaseUrl=mongodb://adminuser:password123@10.52.3.210:32000/"
+      # Edit this to match the URL of the MongoDB Service.
+      # - "--databaseUrl=mongodb://adminuser:password123@mongodb-nodeport.default.svc.cluster.local:32000/"
       - "--experiRunId=TAXI"
