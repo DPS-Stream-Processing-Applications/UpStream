@@ -5,12 +5,13 @@ This is required because kafka will only serve the ipaddresses of the pods which
 ## Dataset Prep
 Make sure you created you required dataset using the [senMLScenarioBuilder](./senMLScenarioBuilder/)
 
-## Sync to Jump Host
-You can run the `uploat_to_bastion` utility which will upload all relevant files to the bastion.
+## Event generator setup
+To upload the eventgenerator to the bastion and generate events for the pipeline starting there:
 
-## Nix
-You will have to install nix on the bastion following the [README section](./README.md#installing-nix).
-
+```bash
+set_up_bastion
+```
+ssh into the jump host using `ssh jump`.
 ## Forwarding
 
 In order for portforwaring of kubectl to work make sure you manually ssh to all the instances before proceeding
