@@ -61,7 +61,7 @@ The experimental setup requires 1 Jump Host as well as 3 cluster nodes.
 Required resources: 1 floating IP, One instance of type skylake, as well as three instances of a cascadelake node.
 To provision instances on Chameleon Cloud you first have to [create a lease](https://chameleoncloud.readthedocs.io/en/latest/technical/reservations/gui_reservations.html).
 After that you can [launch the instances](https://chameleoncloud.readthedocs.io/en/latest/technical/baremetal/launching_gui.html#launch-an-instance).
-Make sure you use the official Chameleon Cloud version of the `Ubuntu 22.04` image for consistency.
+Make sure you use the official Chameleon Cloud version of the `Ubuntu 26.04` image for consistency.
 
 > [!TIP]
 > regarding `ssh` access to the host, it might be easiest to upload your existing global ssh key,
@@ -96,8 +96,8 @@ kubectl get nodes
 
 ### Helm Deployment
 All the applications of this repository depend on external resources like an Apache `Kafka` cluster as well as a `mongoDB` database.
-All dependencies for the applications are managed and deployed via a custom `helm chart` in the `helm-charts` directory.
-Refer to the [README](./helm-charts/riot-applications/README.md) for an installation walkthrough.
+All dependencies for the applications are managed and deployed via a custom `helm chart` in the `helm/` directory.
+Refer to the [README](./helm/README.md) for an installation walkthrough.
 
 ## Monitoring
 The project is using Prometheus and Grafana to track the metrics of the evaluation runs
