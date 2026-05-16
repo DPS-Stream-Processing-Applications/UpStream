@@ -167,27 +167,19 @@ def sample_timestamps_constant_rate(
         raise ValueError("events_per_second must be positive")
 
     interval_ms = 1000.0 / events_per_second
-    total_ticks = int(scenario_duration_ms / interval_ms)  # events the rate produces
+    total_ticks = int(scenario_duration_ms / interval_ms)  # total events for 15 min
 
-    base_timestamps = np.arange(total_ticks) * interval_ms
+    timestamps = np.arange(total_ticks) * interval_ms  # last tick ~= 15min
 
-    loops = max(1, int(np.ceil(row_count / total_ticks))) if total_ticks > 0 else 1
-
+    loops = max(1, int(np.ceil(total_ticks / row_count))) if row_count > 0 else 1
     if loops > 1:
         print(
             f"Rate produces {total_ticks} events but CSV has {row_count} rows "
             f"-> looping source data {loops}x"
         )
-        # each repetition is offset by one full duration so timestamps keep rising
-        tiled = np.concatenate(
-            [base_timestamps + i * scenario_duration_ms for i in range(loops)]
-        )
-        timestamps = tiled[:row_count]
-    else:
-        timestamps = base_timestamps[:row_count]
 
     checks_min = [0.5, scenario_duration_ms / 2 / 60_000, scenario_duration_ms / 60_000 - 0.5]
-    window = 60_000  # 1-minute window in ms
+    window = 60_000
     for m in checks_min:
         center = m * 60_000
         count = np.sum((timestamps >= center - window / 2) & (timestamps < center + window / 2))
