@@ -12,5 +12,5 @@ poetry run main <path_to_target_file> --scenario=<GAUSSIAN, EXPONENTIAL, LINEAR,
 ```python
 poetry run main ../beam-applications-java/data/riot_events_TAXI.csv --scenario=EXPONENTIAL
 
-poetry run main ../beam-applications-java/data/riot_events_TAXI.csv --scenario=CONSTANT_RATE --events-per-second=1000
+poetry run main ../beam-applications-java/data/riot_events_TAXI.csv --scenario=CONSTANT_RATE --events-per-second=800
 ```

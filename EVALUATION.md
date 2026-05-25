@@ -28,6 +28,18 @@ forward_kubectl
 forward_kafka
 ```
 
+### Stop forwarding:
+It might be teh case that the forwarding precess gets stuck in the background you can run the following command to kill them:
+
+```bash
+lsof -ti :6443 | xargs kill
+lsof -ti :9093 | xargs kill
+```
+
+
 ```bash
 java -jar $PROJECT_ROOT/KafkaProducer.jar $PROJECT_ROOT/data/riot_events_TAXI_constant_rate_scenario.csv $(nproc) "senml-source"
+java -jar $PROJECT_ROOT/KafkaProducer.jar $PROJECT_ROOT/data/riot_events_TAXI_constant_rate_scenario.csv $(nproc) "senml-cleaned"
 ```
+
+## Downloading benchmark data
