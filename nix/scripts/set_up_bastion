@@ -4,7 +4,7 @@ set -euo pipefail
 HOST="jump"
 
 echo "Uploading files"
-# upload_to_bastion
+upload_to_bastion
 echo "Installing nix"
 ssh "$HOST" "sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --no-daemon"
 ssh "$HOST" ". /home/cc/.nix-profile/etc/profile.d/nix.sh"
