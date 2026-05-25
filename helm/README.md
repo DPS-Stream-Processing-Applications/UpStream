@@ -23,10 +23,14 @@ To upload the `.jar` build artifact to the cluster you can use the `upload_job_j
 
 ```bash
 upload_job_jar ../beam-applications-java/etl/build/FlinkJob.jar
+upload_job_jar ../beam-applications-java/stats/build/FlinkJob.jar
 ```
 
 ```bash
 helm install flink ./flink
+# or
+helm install flink ./flink -f ./flink/upstream_values.yaml
+helm install flink ./flink -f ./flink/with_hpa_values.yaml
 ```
 > [!WARNING]
 > Check `kubectl get pods` after installing the Flink chart.
