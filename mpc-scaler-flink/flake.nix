@@ -37,7 +37,7 @@
           };
 
           shellHook = ''
-            export KUBECONFIG=$(pwd)
+            export KUBECONFIG=$PWD/../.kube/config
           '';
         };
       };
