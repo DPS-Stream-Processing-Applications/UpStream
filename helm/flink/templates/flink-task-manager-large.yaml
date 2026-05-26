@@ -4,37 +4,40 @@ kind: Deployment
 metadata:
   name: flink-application-cluster-taskmanager-large
   namespace: default
+  labels:
+    app: flink-application-cluster
+    component: taskmanager
 spec:
   selector:
     matchLabels:
-      app: flink
-      role: taskmanager
+      app: flink-application-cluster
+      component: taskmanager
   template:
     metadata:
       labels:
-        app: flink
-        role: taskmanager
+        app: flink-application-cluster
+        component: taskmanager
         release: monitoring
     spec:
       serviceAccount: flink
       containers:
         - name: taskmanager
           image: flink:1.20
-          command: ["/docker-entrypoint.sh", "taskmanager"]
+          command: 
+            - /docker-entrypoint.sh
+            - taskmanager
+            - -Dtaskmanager.numberOfTaskSlots=16
+            - -Dtaskmanager.memory.process.size=32g
           resources:
             requests:
-              memory: "12Gi"
-              cpu: "6"
+              memory: "32Gi"
+              cpu: "16"
             limits:
-              memory: "12Gi"
-              cpu: "6"
+              memory: "32Gi"
+              cpu: "16"
           env:
             - name: FLINK_CONF_DIR
               value: /opt/flink/conf
-            - name: FLINK_PROPERTIES
-              value: |
-                taskmanager.numberOfTaskSlots: 16
-                taskmanager.memory.process.size: 12gb
           ports:
             - containerPort: 9249
               name: metrics

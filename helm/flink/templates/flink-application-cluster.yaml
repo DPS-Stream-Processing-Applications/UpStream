@@ -27,15 +27,6 @@ spec:
     # since the default is `none`.
     restart-strategy.type: exponential-delay
 
-    # job.autoscaler.stabilization.interval: 1m
-    # job.autoscaler.metrics.window: 5m
-    # job.autoscaler.target.utilization: "0.8"
-    # job.autoscaler.target.utilization.boundary: "0.2"
-    # job.autoscaler.restart.time: 2m
-    # job.autoscaler.catch-up.duration: 5m
-    # job.autoscaler.catch-up.duration: "0"
-    # job.autoscaler.stabilization.interval: "30s"
-
   serviceAccount: flink
   podTemplate:
     metadata:
@@ -60,8 +51,8 @@ spec:
             type: DirectoryOrCreate
   jobManager:
     resource:
-      memory: "4096m"
-      cpu: 2
+      memory: "8g"
+      cpu: 4
   taskManager:
     resource:
       memory: "2048m"
