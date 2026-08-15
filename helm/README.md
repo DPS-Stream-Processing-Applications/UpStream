@@ -11,9 +11,9 @@ cert-manager oci://quay.io/jetstack/charts/cert-manager \
 ```
 
 ```bash
+helm install monitoring ./monitoring
 helm install mongodb ./mongodb
 helm install kafka ./kafka
-helm install monitoring ./monitoring
 ```
 These three charts contain the required infrastructure for the RIoT applications and monitoring.
 
