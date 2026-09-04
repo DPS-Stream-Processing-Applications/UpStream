@@ -1,8 +1,6 @@
 import logging
 import time
-from datetime import datetime
 from math import ceil
-from typing import List
 
 import numpy as np
 from kubernetes import client, config
@@ -39,7 +37,6 @@ def get_flink_metric(query_str: str) -> float:
 
 
 def get_taskmanager_deployments():
-
     name_to_taskslots_map = {
         "flink-application-cluster-taskmanager": 2,
         "flink-application-cluster-taskmanager-medium": 8,
@@ -109,7 +106,7 @@ def main():
 
     initial_metrics = _fetch_metrics_array()
     logger.debug(
-            f"Initial metrics: busy=%.4f idle=%.4f backpressure=%.4f",
+        "Initial metrics: busy=%.4f idle=%.4f backpressure=%.4f",
         *initial_metrics,
     )
 
@@ -117,9 +114,6 @@ def main():
     controller.initial_measurement(initial_metrics[:2])
 
     allocator: PodAllocator = PodAllocator(utilisation_factor=0.8)
-
-    taskmanager_deployments = get_taskmanager_deployments()
-    logger.info("Initial deployment configurations: %s", taskmanager_deployments)
 
     iteration = 0
     while True:
@@ -131,6 +125,9 @@ def main():
         logger.debug(f"--- Sync iteration {iteration} ---")
 
         busy_time, idle_time, backpressure = _fetch_metrics_array()
+
+        taskmanager_deployments = get_taskmanager_deployments()
+        logger.info("Deployment configurations: %s", taskmanager_deployments)
 
         current_task_slot_count: int = sum(
             deployment.replica_count * deployment.number_of_taskslots
@@ -154,7 +151,6 @@ def main():
             )
             new_task_slot_count = round(current_task_slot_count * scaling_factor)
 
-
         new_task_slot_count = max(new_task_slot_count, 1)
 
         new_allocation = allocator.allocate_pods(
@@ -166,7 +162,7 @@ def main():
         )
         logger.info(f"New deployment configuration: {new_allocation}")
 
-        # for deployment in new_allocation:
-        #     scale_deployment(
-        #         deployment_name=deployment.name, replicas=deployment.replica_count
-        #     )
+        for deployment in new_allocation:
+            scale_deployment(
+                deployment_name=deployment.name, replicas=deployment.replica_count
+            )

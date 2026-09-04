@@ -25,6 +25,8 @@ prometheus_queries = {
         "/ ignoring(resource) sum(kube_pod_container_resource_requests{namespace='default', "
         "pod=~'flink-application-cluster-taskmanager-.*', resource='memory'}) by (pod)) * 100"
     ),
+    "mongodb_average_inserts_senml_cleaned": "rate(mongodb_top_insert_count{collection='senml-cleaned'}[10s])",
+    "mongodb_average_inserts_plots": "rate(mongodb_top_insert_count{collection='plots'}[10s])",
 }
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"

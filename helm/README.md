@@ -24,6 +24,7 @@ To upload the `.jar` build artifact to the cluster you can use the `upload_job_j
 ```bash
 upload_job_jar ../beam-applications-java/etl/build/FlinkJob.jar
 upload_job_jar ../beam-applications-java/stats/build/FlinkJob.jar
+upload_job_jar ../beam-applications-java/pred/build/FlinkJob.jar
 ```
 
 ```bash
