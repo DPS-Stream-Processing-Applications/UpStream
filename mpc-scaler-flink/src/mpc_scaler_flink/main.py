@@ -102,7 +102,7 @@ def _fetch_metrics_array() -> np.ndarray:
 
 def main():
     SYNC_PERIOD_SEC: int = 120
-    BACKPRESSURE_THRESHOLD = 0.1
+    BACKPRESSURE_THRESHOLD = 0.01
 
     initial_metrics = _fetch_metrics_array()
     logger.debug(
