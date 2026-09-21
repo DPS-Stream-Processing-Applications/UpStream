@@ -19,7 +19,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-# TODO: Replace with kubernetes svc url
 prometheus = PrometheusConnect(url="http://localhost:9090", disable_ssl=True)
 
 
@@ -102,7 +101,7 @@ def _fetch_metrics_array() -> np.ndarray:
 
 def main():
     SYNC_PERIOD_SEC: int = 120
-    BACKPRESSURE_THRESHOLD = 0.01
+    BACKPRESSURE_THRESHOLD = 0.1
 
     initial_metrics = _fetch_metrics_array()
     logger.debug(
