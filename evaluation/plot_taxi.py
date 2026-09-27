@@ -127,9 +127,11 @@ def main():
         x_label = "Timestamp [s, relative]"
 
     plt.figure(figsize=(12, 5))
-    plt.plot(x, counts, color="steelblue", linewidth=1, marker=".", markersize=3)
+    plt.plot(x, counts, color="steelblue", linewidth=1)
+    plt.xlabel(x_label)
     plt.xlabel(x_label)
     plt.ylabel("Number of events at that timestamp")
+    plt.ylim(bottom=0, top=counts.max() + 1)
     plt.title(
         f"Events per exact timestamp ({len(timestamps)} events, "
         f"{len(unique_ts)} unique timestamps)"

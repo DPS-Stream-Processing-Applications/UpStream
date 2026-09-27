@@ -10,16 +10,14 @@ both groups the script plots the group mean over time as a line with a
 shaded +/- 1 standard deviation band, so the two groups can be compared
 run-to-run-consistency and all.
 
-Runs don't need identical lengths or timestamps: each run is put on a
-"seconds since its own start" axis, and its real samples are snapped
-into discrete time buckets (bucket width = each metric's own sampling
-interval, auto-inferred from the data; nothing is interpolated between
-samples). A run (in either group) that is shorter than the longest run
-of that metric is EXTRAPOLATED by holding its last observed value flat
-until it reaches the same length as the longest one, so both groups are
-always compared over the same time range. The mean/std at each bucket
-are taken across runs. Note that the tail of a shortened run is
-therefore a held value, not measured data.
+Runs within a group don't need identical lengths or timestamps: each
+run is put on a "seconds since its own start" axis, and its real,
+un-interpolated samples are snapped into discrete time buckets (bucket
+width = each metric's own sampling interval, auto-inferred from the
+data). The mean/std at each bucket is computed only from the actual
+values that landed there -- no synthetic/interpolated points are ever
+created. Only the time range covered by every run in a group is used,
+so mean/std aren't skewed by a run that ended early.
 
 Metrics reported per-pod (e.g. task_manager_cpu, task_manager_memory)
 are first averaged across pods within each individual run, so runs with
@@ -43,9 +41,8 @@ Summary CSV
 Alongside the plots, a plain per-metric summary is written for EVERY
 metric in each group (not just the ones shared by both). No steady-state
 window, spike detection, drain time or any other special-casing: each
-run's samples (averaged across pods per timestamp, and extended with
-its last value if the run is shorter than the longest one, as above) are
-simply averaged over the whole run, and the columns are
+run's samples (averaged across pods per timestamp) are simply averaged
+over the whole run, and the columns are
 
     group, metric, n_runs,
     mean               mean over runs of each run's mean value
@@ -54,15 +51,9 @@ simply averaged over the whole run, and the columns are
     mean_within_run_std  mean over runs of each run's own std over time
                        (how much the metric fluctuates within a run)
 
-With --backpressure-threshold T, the "backpressure" rows additionally get
-    mean_frac_time_above_threshold   mean over runs of the fraction of the
-                       run's time buckets with backpressure > T
-    std_frac_time_above_threshold    std (ddof=1) of that fraction over runs
-
 Usage
 -----
     python compare_groups.py DIRECTORY PATTERN_A PATTERN_B [--out-dir OUT_DIR] [--bin-seconds SECONDS]
-                             [--backpressure-threshold T]
 
 Example
 -------
@@ -88,8 +79,8 @@ import numpy as np
 import pandas as pd
 from matplotlib.ticker import MaxNLocator
 
-COLOR_A = "#013261"
-COLOR_B = "#f39301"
+COLOR_A = "#f39301"
+COLOR_B = "#013261"
 
 # Flink task-manager pods come in three sizes, distinguished by a suffix
 # on the pod name after the common prefix below (e.g.
@@ -259,70 +250,63 @@ def infer_bin_seconds(per_run_series: list[pd.DataFrame]) -> float:
     return float(np.median(diffs))
 
 
-def run_series_list(runs: list[pd.DataFrame], metric: str) -> list[pd.DataFrame]:
-    """Non-empty per-run (t_seconds, value) series for `metric`."""
-    out = []
+def group_mean_std(
+    runs: list[pd.DataFrame], metric: str, bin_seconds: float | None = None
+):
+    """Given several runs (each a full dataframe for one file), compute
+    the mean and std of `metric` across those runs at each discrete
+    sample time -- no interpolation. Each run's real (t_seconds, value)
+    samples are snapped to the nearest time bucket (bucket width =
+    `bin_seconds`, auto-inferred from the data's own sampling interval
+    if not given) and the mean/std at each bucket is computed only from
+    the actual values that landed there. Only the time range common to
+    *all* runs that contain this metric is used, so the mean/std are not
+    skewed by runs that ended early.
+
+    Returns (bucket_times, mean, std, n_runs_used) or None if no run has
+    the metric.
+    """
+    per_run_series = []
+    max_common_t = None
     for df in runs:
         s = series_for_metric(df, metric)
-        if not s.empty:
-            out.append(s)
-    return out
+        if s.empty:
+            continue
+        per_run_series.append(s)
+        run_max = s["t_seconds"].max()
+        max_common_t = run_max if max_common_t is None else min(max_common_t, run_max)
 
-
-def metric_time_grid(series_lists: list[list[pd.DataFrame]], bin_seconds=None):
-    """Bucket width and end time shared by every run of one metric, across
-    all groups being compared: the end time is that of the LONGEST run, so
-    shorter runs (in either group) get extended to it. Returns
-    (bin_seconds, t_end) or None if no run has the metric."""
-    all_series = [s for lst in series_lists for s in lst]
-    if not all_series:
+    if not per_run_series or max_common_t is None or max_common_t <= 0:
         return None
+
     if bin_seconds is None:
-        bin_seconds = infer_bin_seconds(all_series)
-    t_end = max(s["t_seconds"].max() for s in all_series)
-    return bin_seconds, t_end
+        bin_seconds = infer_bin_seconds(per_run_series)
 
+    # Collect every run's raw, real samples (restricted to the time range
+    # every run in the group covers) and snap each to the nearest bucket.
+    all_points = pd.concat(
+        [s[s["t_seconds"] <= max_common_t] for s in per_run_series],
+        ignore_index=True,
+    )
+    all_points["t_bucket"] = (
+        all_points["t_seconds"] / bin_seconds
+    ).round() * bin_seconds
 
-def bucketed_runs(
-    series_list: list[pd.DataFrame], bin_seconds: float, t_end: float
-) -> pd.DataFrame:
-    """Put every run on the same time grid (0, bin, 2*bin, ... t_end).
-    Rows = runs, columns = bucket times in seconds. Each run's real
-    samples are snapped to the nearest bucket (several samples in one
-    bucket are averaged). Buckets AFTER a run's last sample are filled by
-    holding that last value (extrapolation); gaps inside a run are left
-    empty (NaN) and simply ignored in the statistics."""
-    n_buckets = int(round(t_end / bin_seconds)) + 1
-    rows = []
-    for s in series_list:
-        idx = (s["t_seconds"] / bin_seconds).round().astype(int)
-        per_bucket = s["value"].groupby(idx.values).mean()  # sorted by bucket
-        row = per_bucket.reindex(range(n_buckets))
-        last_idx = int(per_bucket.index[-1])
-        if last_idx + 1 < n_buckets:
-            row.iloc[last_idx + 1 :] = per_bucket.iloc[-1]
-        rows.append(row.to_numpy(dtype=float))
-    return pd.DataFrame(np.vstack(rows), columns=np.arange(n_buckets) * bin_seconds)
+    grouped = (
+        all_points.groupby("t_bucket")["value"]
+        .agg(mean="mean", std="std", count="count")
+        .reset_index()
+        .sort_values("t_bucket")
+    )
+    grouped["std"] = grouped["std"].fillna(
+        0.0
+    )  # a bucket with a single sample has no spread
 
-
-def group_mean_std(series_list: list[pd.DataFrame], bin_seconds: float, t_end: float):
-    """Mean and std (ddof=1) across the group's runs at each time bucket,
-    after extending shorter runs to `t_end` by holding their last value
-    (see `bucketed_runs`).
-
-    Returns (bucket_times, mean, std, n_runs) or None if no run has the
-    metric."""
-    if not series_list:
-        return None
-    m = bucketed_runs(series_list, bin_seconds, t_end)
-    mean = m.mean(axis=0)
-    std = m.std(axis=0, ddof=1).fillna(0.0)  # a single run has no spread
-    keep = mean.notna().to_numpy()
     return (
-        m.columns.to_numpy()[keep],
-        mean.to_numpy()[keep],
-        std.to_numpy()[keep],
-        len(series_list),
+        grouped["t_bucket"].to_numpy(),
+        grouped["mean"].to_numpy(),
+        grouped["std"].to_numpy(),
+        len(per_run_series),
     )
 
 
@@ -331,62 +315,54 @@ def group_mean_std(series_list: list[pd.DataFrame], bin_seconds: float, t_end: f
 # ----------------------------------------------------------------------
 
 
-def summarize_metric(
-    series_list: list[pd.DataFrame],
-    bin_seconds: float,
-    t_end: float,
-    threshold: float | None = None,
-) -> dict:
-    """Plain mean / std of one metric over a group of runs. Each run is
-    put on the shared time grid (short runs extended with their last
-    value, see `bucketed_runs`) and simply averaged over the whole run.
-    If `threshold` is given, also the fraction of each run's time buckets
-    with value > threshold, averaged over runs (mean) and its std across
-    runs."""
-    m = bucketed_runs(series_list, bin_seconds, t_end)
-    run_means = m.mean(axis=1)  # one value per run
-    run_stds = m.std(axis=1, ddof=1)  # NaN if a run has a single sample
-    stats = {
-        "n_runs": len(series_list),
+def summarize_metric(runs: list[pd.DataFrame], metric: str) -> dict | None:
+    """Plain mean / std of one metric over a group of runs. For each run,
+    the metric is averaged across pods per timestamp (same as the plots)
+    and then simply averaged over every sample in the run. Returns None
+    if no run has the metric."""
+    run_means, run_stds = [], []
+    for df in runs:
+        s = series_for_metric(df, metric)
+        if s.empty:
+            continue
+        run_means.append(s["value"].mean())
+        run_stds.append(s["value"].std(ddof=1))  # NaN if the run has 1 sample
+
+    if not run_means:
+        return None
+
+    run_means = pd.Series(run_means, dtype=float)
+    run_stds = pd.Series(run_stds, dtype=float)
+    return {
+        "n_runs": len(run_means),
         "mean": run_means.mean(),
         "std_across_runs": run_means.std(ddof=1),  # NaN if only one run
-        "mean_within_run_std": run_stds.mean(),
+        "mean_within_run_std": run_stds.mean(),  # NaN if all NaN
     }
-    if threshold is not None:
-        frac = (m > threshold).sum(axis=1) / m.notna().sum(axis=1)
-        stats["mean_frac_time_above_threshold"] = frac.mean()
-        stats["std_frac_time_above_threshold"] = frac.std(ddof=1)
-    return stats
 
 
-def write_summary(
-    label_a: str,
-    label_b: str,
-    metric_data: dict,
-    path: Path,
-    backpressure_threshold: float | None = None,
-):
+def write_summary(groups: list[tuple[str, list[pd.DataFrame]]], path: Path):
     """Write the plain mean/std summary CSV: one row per (group, metric),
     for every metric present in that group."""
     rows = []
-    for label, key in ((label_a, "a"), (label_b, "b")):
-        for metric, d in sorted(metric_data.items()):
-            if not d[key]:
+    for label, runs in groups:
+        metrics = sorted(set().union(*(set(df["metric"].unique()) for df in runs)))
+        for metric in metrics:
+            stats = summarize_metric(runs, metric)
+            if stats is None:
                 continue
-            threshold = backpressure_threshold if metric == "backpressure" else None
-            stats = summarize_metric(d[key], d["bin"], d["t_end"], threshold)
             rows.append({"group": label, "metric": metric, **stats})
-    columns = [
-        "group",
-        "metric",
-        "n_runs",
-        "mean",
-        "std_across_runs",
-        "mean_within_run_std",
-    ]
-    if backpressure_threshold is not None:
-        columns += ["mean_frac_time_above_threshold", "std_frac_time_above_threshold"]
-    pd.DataFrame(rows, columns=columns).to_csv(path, index=False)
+    pd.DataFrame(
+        rows,
+        columns=[
+            "group",
+            "metric",
+            "n_runs",
+            "mean",
+            "std_across_runs",
+            "mean_within_run_std",
+        ],
+    ).to_csv(path, index=False)
     print(f"Saved {path}")
 
 
@@ -497,13 +473,6 @@ def main():
         help="Width (in seconds) of the discrete time buckets samples are grouped into. "
         "If omitted, it's auto-inferred per metric from that metric's own sampling interval.",
     )
-    parser.add_argument(
-        "--backpressure-threshold",
-        type=float,
-        default=None,
-        help="If given, the summary CSV also reports, for the 'backpressure' metric, the "
-        "mean and std (across runs) of the fraction of time spent above this threshold.",
-    )
     args = parser.parse_args()
 
     directory = Path(args.directory)
@@ -553,6 +522,12 @@ def main():
     label_a = f"'{args.pattern_a}' group"
     label_b = f"'{args.pattern_b}' group"
 
+    # Plain mean/std table for every metric in each group.
+    write_summary(
+        [(label_a, runs_a), (label_b, runs_b)],
+        out_dir / f"{category_prefix}_{dir_prefix}_summary.csv",
+    )
+
     metrics_a = set().union(*(set(df["metric"].unique()) for df in runs_a))
     metrics_b = set().union(*(set(df["metric"].unique()) for df in runs_b))
     shared_metrics = sorted(metrics_a & metrics_b)
@@ -565,41 +540,11 @@ def main():
         print(f"Note: metrics only in group B: {sorted(only_b)}")
     print(f"Comparing {len(shared_metrics)} shared metrics: {shared_metrics}")
 
-    # Per metric: every run's series plus the shared time grid. The end of
-    # the grid is the longest run across BOTH groups; shorter runs are
-    # extended to it by holding their last value.
-    metric_data = {}
-    for metric in sorted(metrics_a | metrics_b):
-        series_a = run_series_list(runs_a, metric)
-        series_b = run_series_list(runs_b, metric)
-        grid = metric_time_grid([series_a, series_b], args.bin_seconds)
-        if grid is None:
-            continue
-        bin_s, t_end = grid
-        metric_data[metric] = {"a": series_a, "b": series_b, "bin": bin_s, "t_end": t_end}
-        short_a = sum(s["t_seconds"].max() < t_end - bin_s / 2 for s in series_a)
-        short_b = sum(s["t_seconds"].max() < t_end - bin_s / 2 for s in series_b)
-        if short_a or short_b:
-            print(
-                f"Extrapolating {metric} to {t_end:.0f}s (hold last value): "
-                f"{short_a}/{len(series_a)} run(s) in A, {short_b}/{len(series_b)} run(s) in B"
-            )
-
-    # Plain mean/std table for every metric in each group.
-    write_summary(
-        label_a,
-        label_b,
-        metric_data,
-        out_dir / f"{category_prefix}_{dir_prefix}_summary.csv",
-        args.backpressure_threshold,
-    )
-
     # Individual plots
     metric_aggs = {}
     for metric in shared_metrics:
-        d = metric_data[metric]
-        agg_a = group_mean_std(d["a"], d["bin"], d["t_end"])
-        agg_b = group_mean_std(d["b"], d["bin"], d["t_end"])
+        agg_a = group_mean_std(runs_a, metric, args.bin_seconds)
+        agg_b = group_mean_std(runs_b, metric, args.bin_seconds)
         metric_aggs[metric] = (agg_a, agg_b)
 
         discrete = is_discrete_metric(metric)
@@ -629,7 +574,7 @@ def main():
     ncols = 2
     nrows = math.ceil(n / ncols)
     fig, axes = plt.subplots(nrows, ncols, figsize=(11, 3.6 * nrows))
-    axes = np.atleast_1d(axes).flatten()
+    axes = axes.flatten() if n > 1 else [axes]
 
     for i, metric in enumerate(shared_metrics):
         agg_a, agg_b = metric_aggs[metric]
