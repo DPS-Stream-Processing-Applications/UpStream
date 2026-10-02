@@ -88,8 +88,8 @@ import numpy as np
 import pandas as pd
 from matplotlib.ticker import MaxNLocator
 
-COLOR_A = "#013261"
-COLOR_B = "#f39301"
+COLOR_A = "#f39301"
+COLOR_B = "#013261"
 
 # Flink task-manager pods come in three sizes, distinguished by a suffix
 # on the pod name after the common prefix below (e.g.
@@ -115,6 +115,30 @@ def is_discrete_metric(metric: str) -> bool:
     return metric in DISCRETE_METRIC_NAMES or metric.startswith(
         DISCRETE_METRIC_PREFIXES
     )
+
+
+# Ordered (substring, y-axis label) rules; the first match wins.
+# Adjust the substrings to match your actual metric names.
+Y_LABEL_RULES = [
+    ("task_manager_replicas_regular", "Regular TM Replicas"),
+    ("task_manager_replicas_medium", "Medium TM Replicas"),
+    ("task_manager_replicas_large", "Large TM Replicas"),
+    ("task_manager_task_slots", "Provisioned Slots"),
+    ("backpressure", "Fraction"),
+    ("busy", "Fraction"),
+    ("idle", "Fraction"),
+    ("cpu", "CPU Utilization (%)"),
+    ("memory", "Memory Utilization (%)"),
+    ("mongo", "MongoDB Output (insert/s)"),
+]
+
+
+def y_label_for_metric(metric: str) -> str:
+    m = metric.lower()
+    for key, label in Y_LABEL_RULES:
+        if key in m:
+            return label
+    return metric.replace("_", " ").title()  # fallback
 
 
 # ----------------------------------------------------------------------
@@ -411,7 +435,7 @@ def plot_metric(
                 where="post",
                 color=COLOR_A,
                 linewidth=1.6,
-                label=f"{label_a} (n={n_a})",
+                label=label_a,
             )
             ax.fill_between(
                 grid_a,
@@ -429,7 +453,7 @@ def plot_metric(
                 where="post",
                 color=COLOR_B,
                 linewidth=1.6,
-                label=f"{label_b} (n={n_b})",
+                label=label_b,
             )
             ax.fill_between(
                 grid_b,
@@ -448,7 +472,7 @@ def plot_metric(
                 mean_a,
                 color=COLOR_A,
                 linewidth=1.6,
-                label=f"{label_a} (n={n_a})",
+                label=label_a,
             )
             ax.fill_between(
                 grid_a, mean_a - std_a, mean_a + std_a, color=COLOR_A, alpha=0.2
@@ -460,20 +484,17 @@ def plot_metric(
                 mean_b,
                 color=COLOR_B,
                 linewidth=1.6,
-                label=f"{label_b} (n={n_b})",
+                label=label_b,
             )
             ax.fill_between(
                 grid_b, mean_b - std_b, mean_b + std_b, color=COLOR_B, alpha=0.2
             )
 
-    title = metric.replace("_", " ")
-    if per_pod_note:
-        title += " (avg across pods)"
-    ax.set_title(title, fontsize=11, fontweight="bold")
     ax.set_xlabel("Time since run start (s)")
-    ax.set_ylabel("value")
-    ax.grid(alpha=0.3)
-    ax.legend(fontsize=8)
+    ax.set_ylabel(y_label_for_metric(metric))
+    handles, labels = ax.get_legend_handles_labels()
+    order = [labels.index(label_b), labels.index(label_a)]
+    ax.legend([handles[i] for i in order], [labels[i] for i in order], fontsize=8)
 
 
 def main():
@@ -504,6 +525,8 @@ def main():
         help="If given, the summary CSV also reports, for the 'backpressure' metric, the "
         "mean and std (across runs) of the fraction of time spent above this threshold.",
     )
+    parser.add_argument("--label-a", default=None, help="Legend label for group A")
+    parser.add_argument("--label-b", default=None, help="Legend label for group B")
     args = parser.parse_args()
 
     directory = Path(args.directory)
@@ -550,8 +573,8 @@ def main():
     runs_a = [load_run(p) for p in files_a]
     runs_b = [load_run(p) for p in files_b]
 
-    label_a = f"'{args.pattern_a}' group"
-    label_b = f"'{args.pattern_b}' group"
+    label_a = args.label_a or args.pattern_a.split("_", 1)[-1]
+    label_b = args.label_b or args.pattern_b.split("_", 1)[-1]
 
     metrics_a = set().union(*(set(df["metric"].unique()) for df in runs_a))
     metrics_b = set().union(*(set(df["metric"].unique()) for df in runs_b))
@@ -576,7 +599,12 @@ def main():
         if grid is None:
             continue
         bin_s, t_end = grid
-        metric_data[metric] = {"a": series_a, "b": series_b, "bin": bin_s, "t_end": t_end}
+        metric_data[metric] = {
+            "a": series_a,
+            "b": series_b,
+            "bin": bin_s,
+            "t_end": t_end,
+        }
         short_a = sum(s["t_seconds"].max() < t_end - bin_s / 2 for s in series_a)
         short_b = sum(s["t_seconds"].max() < t_end - bin_s / 2 for s in series_b)
         if short_a or short_b:

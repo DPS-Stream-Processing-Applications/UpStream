@@ -108,6 +108,30 @@ def is_discrete_metric(metric: str) -> bool:
     )
 
 
+# Ordered (substring, y-axis label) rules; the first match wins.
+# Adjust the substrings to match your actual metric names.
+Y_LABEL_RULES = [
+    ("task_manager_replicas_regular", "Regular TM Replicas"),
+    ("task_manager_replicas_medium", "Medium TM Replicas"),
+    ("task_manager_replicas_large", "Large TM Replicas"),
+    ("task_manager_task_slots", "Provisioned Slots"),
+    ("backpressure", "Fraction"),
+    ("busy", "Fraction"),
+    ("idle", "Fraction"),
+    ("cpu", "CPU Utilization (%)"),
+    ("memory", "Memory Utilization (%)"),
+    ("mongo", "MongoDB Output (insert/s)"),
+]
+
+
+def y_label_for_metric(metric: str) -> str:
+    m = metric.lower()
+    for key, label in Y_LABEL_RULES:
+        if key in m:
+            return label
+    return metric.replace("_", " ").title()  # fallback
+
+
 # ----------------------------------------------------------------------
 # File discovery / loading
 # ----------------------------------------------------------------------
@@ -442,12 +466,10 @@ def plot_metric(
                 grid_b, mean_b - std_b, mean_b + std_b, color=COLOR_B, alpha=0.2
             )
 
-    title = metric.replace("_", " ")
-    if per_pod_note:
-        title += " (avg across pods)"
-    ax.set_title(title, fontsize=11, fontweight="bold")
     ax.set_xlabel("Time since run start (s)")
-    ax.set_ylabel("value")
+    ax.set_ylabel(y_label_for_metric(metric))
+    ax.grid(alpha=0.3)
+    ax.legend(fontsize=8)
     ax.grid(alpha=0.3)
     ax.legend(fontsize=8)
 

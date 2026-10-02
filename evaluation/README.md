@@ -110,15 +110,15 @@ java -jar $PROJECT_ROOT/KafkaProducer.jar $PROJECT_ROOT/data/riot_events_TAXI_ex
 
 # Plotting
 ```bash
-python compare_groups.py ./exponential_plateau "ETL_HPA" "ETL_UpStream" --backpressure-threshold 0.1
-python compare_groups.py ./static_10000 "ETL_HPA" "ETL_UpStream" --backpressure-threshold 0.1
-python compare_groups.py ./TAXI_normalized "ETL_HPA" "ETL_UpStream" --backpressure-threshold 0.1
+python compare_groups.py ./exponential_plateau "ETL_HPA" "ETL_UpStream" --label-a HPA --label-b UpStream --backpressure-threshold 0.1
+python compare_groups.py ./static_10000 "ETL_HPA" "ETL_UpStream" --label-a HPA --label-b UpStream --backpressure-threshold 0.1
+python compare_groups.py ./TAXI_normalized "ETL_HPA" "ETL_UpStream" --label-a HPA --label-b UpStream --backpressure-threshold 0.1
 
-python compare_groups.py ./static_10000 "STATS_HPA" "STATS_UpStream" --backpressure-threshold 0.1
-python compare_groups.py ./TAXI_normalized "STATS_HPA" "STATS_UpStream" --backpressure-threshold 0.1
+python compare_groups.py ./static_10000 "STATS_HPA" "STATS_UpStream" --label-a HPA --label-b UpStream --backpressure-threshold 0.1
+python compare_groups.py ./TAXI_normalized "STATS_HPA" "STATS_UpStream" --label-a HPA --label-b UpStream --backpressure-threshold 0.1
 
-python compare_groups.py ./static_10000 "PRED_HPA" "PRED_UpStream" --backpressure-threshold 0.1
-python compare_groups.py ./TAXI_normalized "PRED_HPA" "PRED_UpStream" --backpressure-threshold 0.1
+python compare_groups.py ./static_10000 "PRED_HPA" "PRED_UpStream" --label-a HPA --label-b UpStream --backpressure-threshold 0.1
+python compare_groups.py ./TAXI_normalized "PRED_HPA" "PRED_UpStream" --label-a HPA --label-b UpStream --backpressure-threshold 0.1
 
 cd comparison_plots
 python plot_upstream_vs_hpa.py

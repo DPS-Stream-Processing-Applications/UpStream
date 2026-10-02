@@ -212,7 +212,7 @@ def load_data(input_dir: Path) -> pd.DataFrame:
                     if steady in df.columns
                     else df[plain]
                 )
-        df["scaler"] = df["group"].str.extract(r"_(UpStream|HPA)")
+        df["scaler"] = df["group"].str.extract(r"(UpStream|HPA)")
         df["pipeline"] = pipeline
         df["load_profile"] = load_profile
         rows.append(df)
@@ -314,8 +314,7 @@ def _draw_bar_chart(
     ax.set_xticks(list(x))
     ax.set_xticklabels(mean_pivot.index, fontsize=9)
     ax.set_ylabel(ylabel)
-    ax.set_title(title, fontsize=11, wrap=True)
-    ax.legend(title="Scaler")
+    ax.legend()
     ax.grid(axis="y", linestyle="--", alpha=0.4)
     fig.tight_layout()
     fig.savefig(out_path, dpi=200)
